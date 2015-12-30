@@ -12,7 +12,7 @@ k<-table(attend2$groupid, attend2$userid)
 store<<-matrix(nrow=dim(k)[1], ncol=dim(k)[1])
 store[1:dim(k)[1],1:dim(k)[1]]<-0 #initialises the starting values of the matrix to 0
 
-#Take a group id which is a row id
+#Sets the group ids as the row and column names of the store matrix
 rownames(store)<-rownames(k)
 colnames(store)<-rownames(k)
 
