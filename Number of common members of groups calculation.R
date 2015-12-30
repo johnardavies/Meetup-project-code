@@ -79,7 +79,7 @@ store[upper.tri(store)]<-""
 diag(store)<-""
 
 #Then write the resulting matrix to the computer as a csv
-write.csv(store, "C:\\Users\\John\\Documents\\Meetup\\edgelistgroupstore9.csv")
+write.csv(store, "filepath")
 
 #Note to read csv adjacency matrices into gephi need to convert commas to semi colons
 # and format nodes as text and edge weights as numbers
