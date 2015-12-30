@@ -1,6 +1,6 @@
-###############################################################################################
+#####################################################################################################
 ###############This calculates the number of people that were members of any two meetup groups
-################################################################################################
+######################################################################################################
 
 #Creates a crosstab matrix of which people (userids) belong to which groups (groupids)
 k<-table(attend2$groupid, attend2$userid)
@@ -16,8 +16,8 @@ store[1:dim(k)[1],1:dim(k)[1]]<-0 #initialises the starting values of the matrix
 rownames(store)<-rownames(k)
 colnames(store)<-rownames(k)
 
-#############The two functions that are applied#####################################################
-################################################################################################
+#############The two functions that are applied########################################################
+#######################################################################################################
 #Function 2 which is called by function 1
 #This function writes the results to the store matrix indexed by x the rows and y the columns
 
@@ -27,7 +27,7 @@ store[c(x), c(y)]<<-store[c(x), c(y)]+bs[[c(as.character(y))]]
 print(store[c(x), c(y)])
 
 }
-###############################################################################################
+###################################################################################################
 #Function 1
 #This function takes a group, selects all the people that go to that group, and then returns all the groups
 #those people are members are of 
@@ -37,14 +37,13 @@ func1<-function(x){
 # Removes the first column which is used to index the row loop from the analysis
 f = x[-1] 
 
-#select all people that are memners of the group we are analysing
+#select all people that are members of the group we are analysing
 hs<-subset(f, f>0)
 
 #This extracts the groupid of the group that we are analysing, using the artificial
-#row index variable that we have created
+#row index variable we have created in the cbind(seq_len(nrow(k)),k) command below
 p<-rownames(k)[x[1]] 
   
-
 #Gets the list of names of people that correspond to the groups
 nam<-names(hs)
 
@@ -54,7 +53,8 @@ grp<-attend2[attend2$userid %in% nam,]
 #This table calculates how many people who went to group x also attended other groups
 bs<<-table(grp[,c("groupid")])
 
-cs<-names(bs)# Extracts the names of the groups
+# Extracts the names of the groups
+cs<-names(bs)
 
 #For each of the groups associated with people going to group x=p write the
 #number of attendees to the matrix using the second function
@@ -83,5 +83,5 @@ write.csv(store, "filepath")
 
 #Note to read csv adjacency matrices into gephi need to convert commas to semi colons
 # and format nodes as text and edge weights as numbers
-#############################################################################################################
-#########################################################################################################
+##############################################################################################################
+##############################################################################################################
