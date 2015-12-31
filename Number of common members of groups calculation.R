@@ -30,14 +30,13 @@ print(store[c(x), c(y)])
 ###################################################################################################
 #Function 1
 #This function takes a group, selects all the people that go to that group, and then returns all the groups
-#those people are members are of 
+#those people are members are of and the number of people per group
 func1<-function(x){
 
-#For that id select all people that attend that id and all the group ids that correspond to that
 # Removes the first column which is used to index the row loop from the analysis
 f = x[-1] 
 
-#select all people that are members of the group we are analysing
+#Select all people that are members of the group we are analysing
 hs<-subset(f, f>0)
 
 #This extracts the groupid of the group that we are analysing, using the artificial
@@ -81,7 +80,7 @@ diag(store)<-""
 #Then write the resulting matrix to the computer as a csv
 write.csv(store, "filepath")
 
-#Note to read csv adjacency matrices into gephi need to convert commas to semi colons
+#Note: to read csv adjacency matrices into gephi need to convert commas to semi colons
 # and format nodes as text and edge weights as numbers
 ##############################################################################################################
 ##############################################################################################################
