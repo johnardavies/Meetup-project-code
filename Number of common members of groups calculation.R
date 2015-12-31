@@ -23,7 +23,7 @@ colnames(store)<-rownames(k)
 
 func2<-function(x, y){
 
-store[c(x), c(y)]<<-store[c(x), c(y)]+bs[[c(as.character(y))]]
+store[c(x), c(y)]<<-store[c(x), c(y)]+grptab[[c(as.character(y))]]
 print(store[c(x), c(y)])
 
 }
@@ -50,17 +50,17 @@ nam<-names(hs)
 grp<-attend2[attend2$userid %in% nam,]
 
 #This table calculates how many people who went to group x also attended other groups
-bs<<-table(grp[,c("groupid")])
+grptab<<-table(grp[,c("groupid")])
 
 # Extracts the names of the groups
-cs<-names(bs)
+cs<-names(grptab)
 
 #For each of the groups associated with people going to group x=p write the
 #number of attendees to the matrix using the second function
 lapply(cs, func2, x=p)
 
-#deletes the bs table
-rm(bs)
+#deletes the grptab table
+rm(grptab)
 
 }
 
