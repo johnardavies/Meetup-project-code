@@ -85,7 +85,7 @@ def recurs(x,y):
      print a
      recurs(a,y) #If there is another page calls recurs again
    except:
-    print 'call fails for', y  #There are no more pages
+    print 'call fails for', y  
   except:
     print 'call fails for ', y
   
