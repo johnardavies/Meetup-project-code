@@ -71,7 +71,7 @@ def recurs(x,y):
    rs=requests.get(x)
    data=rs.json()
    rs.headers
-   c=rs.headers['x-ratelimit-remaining']  #Sees how many calls can still be mace 
+   c=rs.headers['x-ratelimit-remaining']  #Sees how many calls can still be made 
    if c==1: #If only one more call can be made adds in a 5 minute delay
     time.sleep(60*5)
    else:
