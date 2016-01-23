@@ -1,10 +1,11 @@
 #####################################################################################################
 ###############This calculates the number of people that were members of any two meetup groups
 ######################################################################################################
-
-#Creates a crosstab matrix of which people (userids) belong to which groups (groupids)
-k<-table(attend2$groupid, attend2$userid)
-#The rows are the groupids the columns are the userid
+#selects only photographs that fall within a building
+photowbs<-subset(photowb, photowb$ID!="<NA>")
+#Creates a crosstab matrix of people and which buildings they have photographs that fall within
+k<-table(photowbs$ï..V1, photowbs$ID)
+#The rows are the people ids the columns are the building ids
 
 ########################Creates the matrix that will store the results#################################
 
@@ -47,10 +48,10 @@ p<-rownames(k)[x[1]]
 nam<-names(hs)
 
 #This selects the set of all groups (and associated data) that those people attended by matching userids on the nam list we have just created
-grp<-attend2[attend2$userid %in% nam,]
+grp<-photowbs[photowbs$ï..V1 %in% nam,]
 
 #This table calculates how many people who went to group x also attended other groups
-grptab<<-table(grp[,c("groupid")])
+grptab<<-table(grp[,c("ID")])
 
 # Extracts the names of the groups
 cs<-names(grptab)
