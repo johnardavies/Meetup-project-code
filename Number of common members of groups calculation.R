@@ -1,5 +1,5 @@
 #####################################################################################################
-###############This calculates the number of people that were members of any two meetup groups
+###############This calculates how many photographers inside building x also took photographs inside building y
 ######################################################################################################
 #selects only photographs that fall within a building
 photowbs<-subset(photowb, photowb$ID!="<NA>")
