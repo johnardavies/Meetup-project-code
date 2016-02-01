@@ -1,5 +1,3 @@
-
-import socket
 import json
 import ssl
 import pprint
@@ -7,8 +5,6 @@ import requests
 import time
 import re
 import csv
-from collections import defaultdict
-from requests_oauthlib import OAuth1
 from meetupauth import *  #Pulls in the authentification details
 #The * function unpacks arguments
 
