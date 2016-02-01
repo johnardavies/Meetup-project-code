@@ -1,7 +1,4 @@
-import httplib
-import urllib
-import urllib2
-import urlparse
+
 import socket
 import json
 import ssl
