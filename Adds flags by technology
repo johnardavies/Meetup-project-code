@@ -1,0 +1,129 @@
+library("datetime")
+library("tm")
+library("RTextTools")
+library("reldist")
+
+#This script reads in Meetup group data
+#It then calculates a series of flags according to whether group decriptions or keywords match various technology and art related words e.g. 3D printing and Virtual reality
+#It then calculates the number of groups and membership numbers according to flag category
+
+################################################################################################################################################################
+#1. Reads in the groups data, reformats the date information and the text information
+###############################################################################################################################################################
+#Reads in the groups data
+groups<-read.csv("infilepath.csv") 
+
+#Names of the groups data
+names(groups)<-c("name","city","groupid", "created", "cat", "membership", "country", "lon", "lat", "keywords", "description")
+
+#Removes duplicates
+groups<-unique(groups)
+
+###############Converts the date into Year and month rather than Unix start time #################################
+#Recodes from ecpoch unix start time in milliseconds
+groups$dates<-as.POSIXct(groups$created/1000, origin="1970-01-01")
+
+#Convert the miliseconds since epoch to a year and month only
+groups$dates<-format(groups$dates, "%Y-%m" )
+
+groups$datesyr<-as.Date(groups$dates, "%Y")#######################################################################
+#This creates a set of flags for different technologies
+##################################################################################################################
+#Converts the keywords data into lowercase########################################################################
+
+groups$keywords<-tolower(as.character(groups$keywords))
+
+groups$description<-tolower(as.character(groups$description))
+
+#ws remove is a function that removes extraneous white space
+wsrem<-function(x){gsub(' +',' ',x)} 
+
+groups$keywords<-wsrem(groups$keywords)
+groups$description<-wsrem(groups$description)
+
+#################################################################################################################################################################
+#2.The code below generates the flags for the different kinds of technologies
+#################################################################################################################################################################
+##########################Internet of Things#################
+iot<-"internet of things|\\<iot\\>"
+art<-"\\<art\\>|\\<design\\>|\\<artists\\>|\\<designers\\>|\\<sculpture\\>|\\<fashion\\>|\\<music\\>|\\<musician\\>|\\<architecture\\>|\\<architects\\>"
+
+groups$iot<-ifelse((grepl(iot, groups$keywords)|grepl(iot, groups$description)) & (grepl(art, (groups$keywords))|grepl(art, (groups$description))), 1, 0)
+
+#########################Raspberry Pi and Arduino############
+ra<-"arduino|raspberry pi|raspberrypi"
+groups$rapi<-ifelse(
+  (grepl(ra, groups$keywords)|grepl(ra, groups$description)) & (grepl(art, groups$keywords)|grepl(art, groups$description))      
+                                                                  , 1, 0)
+########################Makerspace and Hackspace#############
+mak<-"hackspace|maker space|makerspace|makerspaces|\\<makers\\>|fablab|fab lab"
+groups$make<-ifelse((grepl(mak, groups$keywords)|grepl(mak, groups$description)) & (grepl(art, (groups$keywords))|grepl(art, (groups$description))), 1, 0)
+
+########################Virtual reality#######################
+vr<-"virtual reality|\\<vr\\>|oculus|augmented reality|virtualreality|augmentedreality"
+
+groups$vr<-ifelse(grepl(vr, groups$keywords) | grepl(vr, groups$description),1, 0) #Or and & does not make much difference
+
+########################digital video#########################
+dvid<-c("digital video|filmmaking ")
+edit<-c("postproduction|editing|\\<post production\\>|\\<post-production\\>")
+groups$dv<-ifelse((grepl(dvid, groups$keywords)|grepl(dvid, groups$description)) & (grepl(edit, (groups$keywords))|grepl(edit, (groups$description))), 1, 0)
+
+########################3D printing###########################
+dd<-c("\\<3d printing\\>|\\<cnc\\>|3d printers")
+groups$dd<-ifelse((grepl(dd, groups$keywords)|grepl(dd, groups$description)) & (grepl(art, (groups$keywords))|grepl(art, (groups$description))), 1, 0)
+                          
+######################digital photography### ##################
+vp<-c("photography") #This matches digital photography as a single group #Changed from digital photography
+ps<-c("photoshop|retouching|manipulation")
+groups$dp<-ifelse((grepl(vp, groups$keywords)|grepl(vp, groups$description)) & (grepl(ps, (groups$keywords))|grepl(ps, (groups$description))), 1, 0)
+
+######################games programming#########################
+gp<-"games programming|games coding|games modding|game development|games design|game programming|game coding|modding|game design"
+groups$gp<-ifelse(grepl(gp, groups$description)|grepl(gp, groups$keywords), 1, 0) #Use this one Most are accounted 
+
+######################data visualisation#########################
+dvi<-"data visualization|data visualisation|data journalism|data journalists|data visualisers|data vizualisers"
+groups$dvis<-ifelse(grepl(dvi, groups$keywords) & grepl(dvi, groups$description), 1, 0)
+
+######################software###################################
+sf<-"unreal engine|\\<unity\\>|frostbite|cryengine|rhino|photoshop|cinder|blender|ableton|pro tools|protools|<\\logic\\>|<\\logic pro\\>|webgl|autodesk|autocad|d3|maya|renderman|cinder|\\<cad\\>|openframeworks|creative coding|katana|\\<modo\\>|zbrush|vray|\\<v-ray\\>|\\<nuke\\>|houdini|3d studio max|3ds max|adobe creative suite|pftrack"
+groups$sf<-ifelse(grepl(sf, groups$keywords), 1, 0)
+#groups$sf1<-ifelse(grepl(sf, groups$description), 1, 0) # This just drags in lots of photoshop
+
+###########################high-tech artists###########################
+ht<-"3d modelling|cg artists|vfx|cgi|visual effects|3d animation" 
+groups$hta<-ifelse((grepl(ht, groups$keywords)|grepl(ht, groups$description)), 1, 0)
+
+######################General tech group catch all################################################################################################################
+groups$aandtgen<-ifelse(grepl(art, groups$keywords) & (groups$cat=="tech") & groups$jt==0 , 1, 0)
+
+#######################################################################
+# Creates a flag for the different technologies########################
+groups$jt<-ifelse((groups$dv==1|groups$dp==1|groups$dd==1|groups$vr==1|groups$iot==1|groups$make==1|groups$rapi==1|groups$dvis==1|groups$sf==1|groups$gp==1|groups$hta==1), 1,0)
+
+#Creates a flag for groups which are included but which do not have correspoding flags picked up by the keywords
+groups$noflag<-ifelse((groups$dv==0 & groups$dp==0 & groups$dd==0 & groups$vr==0 & groups$iot==0 & groups$make==0 & groups$rapi==0 & groups$dvis==0 & groups$sf==0 & groups$gp==0 & groups$hta==0 & groups$aandtgen==0), 1,0)
+#########################################################################
+
+###############################################################################################################################################################
+#3. Calculates number of groups and group members by flag category
+###############################################################################################################################################################
+  
+#Calculates the number of groups by technology################################
+grpcnt<-data1[,c("membership", "dd", "make", "rapi", "iot","vr","gp","sf","dvis", "hta", "dv" , "dp","shortlist", "aandtgen", "noflag")]
+
+groupnum <-apply(grpcnt,2,sum, na.rm=TRUE) #Could use colSums function instead
+
+#Calculates the number of groupmembers 
+
+memcount<-function(x){sum(subset(grpcnt$membership , x==1))}
+
+memnumbers <-apply(grpcnt,2,memcount)
+###############################################################################################
+#Merges the two datasets and writes it to a csv
+
+groupstat<-rbind(aggdata1, memnumbers)
+
+write.csv(groupstat,"outfilepath.csv")
+
