@@ -1,0 +1,66 @@
+library("tm")
+library("cluster")
+library("fpc")
+
+#selects only groups that are examined in the analysis
+shl<-subset(groups,groups$shortlist==1)
+
+
+####################Processes the description data######################################################
+useriddesc<- Corpus(VectorSource(shl$description)) #, readerControl = list(language = "eng"))
+
+#Removes whitespace
+useriddesc <- tm_map(useriddesc, stripWhitespace) 
+
+#Removes punctuation
+useriddesc <- tm_map(useriddesc, removePunctuation) 
+
+#Removes stopwords
+useriddesc<-tm_map(useriddesc, removeWords, stopwords('english'))
+
+#Generates a document control list
+myDtm <- TermDocumentMatrix(useriddesc)
+
+#If the Document term matrix has column headings that are the words and the row headings are
+#the document numbers then running a cluster analysis groups the documents, otherwise it groups
+#the words
+
+myDtm<-t(myDtm)
+
+#############################################################################################
+#############################################################################################
+#Cluster analysis of the keyword information
+#############################################################################################
+#######Remove the spare terms from the matrix #Creates a list of relevant categories
+  
+myDtm <- removeSparseTerms(myDtm, sparse=0.95)
+#Sparsity refers to the proportion of documents that the term appears. If sparse is 95% only 
+#terms which appear in 5% of documents will be retained 
+#Converseley if sparse was 5%, only terms that appear in 95% of documents would be retained
+#ance between the words
+
+#standardises the variables
+mydata.df.scale <- scale(myDtm)
+
+#Calculates the distance information
+d <- dist(mydata.df.scale, method = "euclidean") 
+
+########################Hierarchical cluster analysis####################################
+fit <- hclust(d, method="ward.D")
+plot(fit, main="", sub="", xlab="", ylab="")
+
+########################k means clustering################################################
+#Tries the clustering algorithm with the number of clusters 
+#set to values between 2 and 29
+#Calculates the within cluster sum of squares for each k
+wss <- 2:50
+for (i in 2:50) wss[i] <- sum(kmeans(d,centers=i,nstart=25)$withinss)
+plot(2:29, wss[2:29])
+xlab="Number of Clusters", ylab="Within groups sum of squares" )
+
+clus<-kmeans(d,centers=6,nstart=25)
+
+plotcluster(d, clus$cluster)
+
+
+##########################################################################################
