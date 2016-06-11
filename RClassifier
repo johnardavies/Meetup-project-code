@@ -1,0 +1,59 @@
+library("RTextTools")
+
+#Reads in labelled training data
+train<-read.csv('filepath.csv', quote="", header=TRUE)
+
+#####################################################################################################################################
+##Creates a document term matrix for the variable of interest########################################################################
+dtMatrix <- create_matrix(train$description,language="english",removePunctuation=TRUE,removeStopwords=TRUE)
+dtMatrix <-create_matrix(train$keywords,language="english",removePunctuation=TRUE,removeStopwords=TRUE)
+
+#Produces the table of word frequencies by summing the counts of each column
+f<-apply(dtMatrix,2,sum)
+
+#######################################################################################################################################
+###############Splits the data into two a set of rows which the data would be trained from and a test set against which the model would be tested
+#If virgin=TRUE then the test data does not have a classification flag
+
+#Trained on observations 1:5000 testes on observations 5001:7703
+container <- create_container(dtMatrix, train$flag, trainSize=1:5000, testSize = 5001:7703,  virgin=FALSE)
+
+#Trained on observations 1:7703 and then testes on the remainder of the dataset which does not have a classification flag
+container1 <- create_container(dtMatrix, train$flag, trainSize=1:7703, testSize =7703:14890 ,  virgin=TRUE)
+
+#If the classification label is a string reformat as.numeric(as.factor) to avoid errors
+
+######################################################################################################################################
+############## Training the model#####################################################################################################
+# train a Support Vector  Machine, a NeuralNetwork Model and others off the training dataset in the container data
+model <- train_models(container, algorithms=c("MAXENT","SVM","SLDA","TREE","BAGGING","BOOSTING","RF"))
+model <- train_models(container, algorithms=c("SVM", "MAXENT", "RF", "BOOSTING"))
+model <- train_models(container1, algorithms=c("SVM", "MAXENT", "RF", "BOOSTING"))
+#Just estimates a SVM
+SVM_CLASSIFY<-classify_model(container,SVM)# algorithm=("SVM"))
+
+#####################################################################################################################################
+############## Applies the fitted model to the test data#############################################################################
+#Applies the fitted models to the test data
+results<-classify_models(container, model)
+results1<-classify_models(container1, model)
+
+container1 <- create_container(dtMatrix,  virgin=TRUE)
+
+#####################################################################################################################################
+############Generates diagnostics from the models####################################################################################
+analytics<-create_analytics(container1,results1)
+
+#The different components of the analytics
+# analytics@algorithm_summary: SUMMARY OF PRECISION, RECALL, F-SCORES, AND ACCURACY SORTED BY TOPIC CODE FOR EACH ALGORITHM
+# analytics@label_summary: SUMMARY OF LABEL (e.g. TOPIC) ACCURACY
+# analytics@document_summary: RAW SUMMARY OF ALL DATA AND SCORING
+# analytics@ensemble_summary: SUMMARY OF ENSEMBLE PRECISION/COVERAGE. USES THE n VARIABLE PASSED INTO create_analytics()
+analytics@algorithm_summary
+
+#Precision is how often a case the algorithm predicts as belonging to a class actually belongs to that class.
+
+#Recall refers to the proportion of elements in a class the algorithm correctly assigns to that class.
+
+#Writes the analytics out as a csv
+write.csv(analytics@document_summary,"outfilepath.csv")
