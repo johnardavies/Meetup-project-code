@@ -15,7 +15,7 @@ f<-apply(dtMatrix,2,sum)
 ###############Splits the data into two a set of rows which the data would be trained from and a test set against which the model would be tested
 #If virgin=TRUE then the test data does not have a classification flag
 
-#Trained on observations 1:5000 testes on observations 5001:7703
+#Trained on observations 1:5000 tests on observations 5001:7703
 container <- create_container(dtMatrix, train$flag, trainSize=1:5000, testSize = 5001:7703,  virgin=FALSE)
 
 #Trained on observations 1:7703 and then testes on the remainder of the dataset which does not have a classification flag
