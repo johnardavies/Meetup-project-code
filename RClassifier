@@ -18,7 +18,7 @@ f<-apply(dtMatrix,2,sum)
 #Trained on observations 1:5000 tests on observations 5001:7703
 container <- create_container(dtMatrix, train$flag, trainSize=1:5000, testSize = 5001:7703,  virgin=FALSE)
 
-#Trained on observations 1:7703 and then testes on the remainder of the dataset which does not have a classification flag
+#Trained on observations 1:7703 and then tests on the remainder of the dataset which does not have a classification flag
 container1 <- create_container(dtMatrix, train$flag, trainSize=1:7703, testSize =7703:14890 ,  virgin=TRUE)
 
 #If the classification label is a string reformat as.numeric(as.factor) to avoid errors
